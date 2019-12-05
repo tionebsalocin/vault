@@ -45,6 +45,9 @@ env:
 
 
 script:
+- export VERSION=$(echo $TRAVIS_TAG | sed 's/^v//' )
+- export PRERELEASE=$(echo $VERSION | cut -d '-' -f 2)
+- sed -i "s/VersionPrerelease = \".*\"/VersionPrerelease = \"$PRERELEASE\"/" version/version_base.go
 - make bootstrap
 - eval $TEST_COMMAND
 before_deploy:
