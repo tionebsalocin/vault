@@ -1,0 +1,130 @@
+---
+layout: "docs"
+page_title: "Enterprise Best Practice"
+sidebar_current: "docs-platform-k8s-examples-enterprise-best-practice"
+sidebar_title: "Enterprise Best Practice"
+description: |-
+  Describes how to set up a best practices Vault Enterprise cluster
+---
+
+# Vault Enterprise Best Practices Cluster
+
+~> **Important Note:** This chart is not compatible with Helm 3. Please use Helm 2 with this chart.
+
+~> **Important Note:** Only non-HSM images are supported. Image tags ending with ".hsm" will not work.
+
+Vault's enterprise features focus around replication. Typically, one cluster is a leader, and other
+clusters are followers. There are two main types of following clusters. Disaster replication clusters
+serve as a warm standby should the leader cluster stop serving traffic. Performance replication
+clusters increase the number of reads that Vault can service.
+
+AWS is given here as a sample for auto-unseal, but any [auto-unseal](/docs/configuration/seal)
+mechanism may be used.
+
+## Prerequisites
+
+### Create a Secret for AWS Auto-Unseal
+
+Create a Kubernetes secret to hold the AWS access key and secret to be used for auto-unsealing
+Vault.
+
+```
+$ echo -n 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY' | openssl base64
+d0phbHJYVXRuRkVNSS9LN01ERU5HL2JQeFJmaUNZRVhBTVBMRUtFWQ==
+```
+
+Create `vault-secrets.yaml`:
+```
+apiVersion: v1
+kind: Secret
+metadata:
+  name: vault
+type: Opaque
+data:
+  AWS_SECRET_ACCESS_KEY: d0phbHJYVXRuRkVNSS9LN01ERU5HL2JQeFJmaUNZRVhBTVBMRUtFWQ==
+```
+
+```
+$ kubectl apply -f ./vault-secrets.yaml
+```
+
+Ensure that your [Kubernetes RBAC](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)
+does not allow unintended parties to view your AWS access key and secret.
+
+## Generate TLS Certificates
+
+TLS certificate generation is covered [here](/docs/platform/k8s/helm/examples/standalone-tls).
+
+## Setting Up the Primary Cluster
+
+The below `values.yaml` can be used to set up a three server Vault cluster using
+Consul as a highly available storage backend, with AWS KMS for Auto Unseal.
+
+```yaml
+server:
+  image:
+    repository: "hashicorp/vault-enterprise"
+    tag: "1.3.1_ent"
+
+  extraEnvironmentVars:
+    VAULT_SEAL_TYPE: awskms
+    VAULT_AWSKMS_SEAL_KEY_ID: 1234abcd-12ab-34cd-56ef-1234567890ab
+    AWS_REGION: us-east-1
+    AWS_ACCESS_KEY_ID: AKIAIOSFODNN7EXAMPLE
+
+  extraSecretEnvironmentVars:
+    - envName: AWS_SECRET_ACCESS_KEY
+      secretName: vault
+      secretKey: AWS_SECRET_ACCESS_KEY
+
+  extraVolumes:
+    - type: secret
+      name: vault
+
+  affinity: |
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchLabels:
+              app: {{ template "vault.name" . }}
+              release: "{{ .Release.Name }}"
+              component: server
+          topologyKey: kubernetes.io/hostname
+
+  service:
+    enabled: true
+
+  ha:
+    enabled: true
+    replicas: 3
+
+    config: |
+      ui = true
+
+      listener "tcp" {
+        tls_cert_file = "/path/to/fullchain.pem"
+        tls_key_file  = "/path/to/privkey.pem"
+        tls_client_ca_file = "/vault/userconfig/vault-server-tls/vault.ca"
+        address = "[::]:8200"
+        cluster_address = "[::]:8201"
+      }
+
+      storage "consul" {
+        path = "vault"
+        address = "HOST_IP:8500"
+        token = "45a3bd52-07c7-47a4-52fd-0745e0cfe967"
+      }
+```
+
+## Setting Up a Disaster Replication (DR) Cluster
+
+Setting up a DR cluster follows an identical process and configuration for
+creating the cluster itself. Once the cluster is up, add it as a follower to
+the leader cluster. See [Disaster Recovery Replication Setup](https://learn.hashicorp.com/vault/operations/ops-disaster-recovery)
+for more.
+
+## Setting Up a Performance Cluster
+
+Setting up a performance cluster also follows an identical process and configuration
+for creating the cluster itself. See [Setting Up Performance Replication](https://learn.hashicorp.com/vault/operations/ops-replication)
+for more on how to configure a cluster to follow the primary once it is up.
