@@ -285,7 +285,6 @@ func TestCache_ConcurrentRequests(t *testing.T) {
 	coreConfig := &vault.CoreConfig{
 		DisableMlock: true,
 		DisableCache: true,
-		Logger:       hclog.NewNullLogger(),
 		LogicalBackends: map[string]logical.Factory{
 			"kv": vault.LeasedPassthroughBackendFactory,
 		},
@@ -330,7 +329,6 @@ func TestCache_TokenRevocations_RevokeOrphan(t *testing.T) {
 	coreConfig := &vault.CoreConfig{
 		DisableMlock: true,
 		DisableCache: true,
-		Logger:       hclog.NewNullLogger(),
 		LogicalBackends: map[string]logical.Factory{
 			"kv": vault.LeasedPassthroughBackendFactory,
 		},
@@ -431,7 +429,6 @@ func TestCache_TokenRevocations_LeafLevelToken(t *testing.T) {
 	coreConfig := &vault.CoreConfig{
 		DisableMlock: true,
 		DisableCache: true,
-		Logger:       hclog.NewNullLogger(),
 		LogicalBackends: map[string]logical.Factory{
 			"kv": vault.LeasedPassthroughBackendFactory,
 		},
@@ -531,7 +528,6 @@ func TestCache_TokenRevocations_IntermediateLevelToken(t *testing.T) {
 	coreConfig := &vault.CoreConfig{
 		DisableMlock: true,
 		DisableCache: true,
-		Logger:       hclog.NewNullLogger(),
 		LogicalBackends: map[string]logical.Factory{
 			"kv": vault.LeasedPassthroughBackendFactory,
 		},
@@ -629,7 +625,6 @@ func TestCache_TokenRevocations_TopLevelToken(t *testing.T) {
 	coreConfig := &vault.CoreConfig{
 		DisableMlock: true,
 		DisableCache: true,
-		Logger:       hclog.NewNullLogger(),
 		LogicalBackends: map[string]logical.Factory{
 			"kv": vault.LeasedPassthroughBackendFactory,
 		},
@@ -724,7 +719,6 @@ func TestCache_TokenRevocations_Shutdown(t *testing.T) {
 	coreConfig := &vault.CoreConfig{
 		DisableMlock: true,
 		DisableCache: true,
-		Logger:       hclog.NewNullLogger(),
 		LogicalBackends: map[string]logical.Factory{
 			"kv": vault.LeasedPassthroughBackendFactory,
 		},
@@ -814,7 +808,6 @@ func TestCache_TokenRevocations_BaseContextCancellation(t *testing.T) {
 	coreConfig := &vault.CoreConfig{
 		DisableMlock: true,
 		DisableCache: true,
-		Logger:       hclog.NewNullLogger(),
 		LogicalBackends: map[string]logical.Factory{
 			"kv": vault.LeasedPassthroughBackendFactory,
 		},
@@ -905,7 +898,6 @@ func TestCache_NonCacheable(t *testing.T) {
 	coreConfig := &vault.CoreConfig{
 		DisableMlock: true,
 		DisableCache: true,
-		Logger:       hclog.NewNullLogger(),
 		LogicalBackends: map[string]logical.Factory{
 			"kv": kv.Factory,
 		},
@@ -1013,7 +1005,6 @@ func TestCache_Caching_LeaseResponse(t *testing.T) {
 	coreConfig := &vault.CoreConfig{
 		DisableMlock: true,
 		DisableCache: true,
-		Logger:       hclog.NewNullLogger(),
 		LogicalBackends: map[string]logical.Factory{
 			"kv": vault.LeasedPassthroughBackendFactory,
 		},
@@ -1115,7 +1106,6 @@ func testCachingCacheClearCommon(t *testing.T, clearType string) {
 	coreConfig := &vault.CoreConfig{
 		DisableMlock: true,
 		DisableCache: true,
-		Logger:       hclog.NewNullLogger(),
 		LogicalBackends: map[string]logical.Factory{
 			"kv": vault.LeasedPassthroughBackendFactory,
 		},

@@ -42,7 +42,6 @@ func TestSealMigration(t *testing.T) {
 		DisableSealWrap: true,
 	}
 	clusterConfig := &vault.TestClusterOptions{
-		Logger:      logger,
 		HandlerFunc: vaulthttp.Handler,
 		SkipInit:    true,
 		NumCores:    1,
